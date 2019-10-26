@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class CalendarPage extends StatefulWidget {
   @override
@@ -25,9 +26,11 @@ class _CalendarPage extends State<CalendarPage> {
   }
 
   void addCommentToList(String _comment) {
-    setState(() {
+    /*setState(() {
       _commentList.add(_comment);
-    });
+    });*/
+    Firestore.instance.collection('events').document()
+  .setData({ 'title': _comment, 'date': _date, 'user': 'Stefán'});
   }
 
   @override
@@ -36,14 +39,26 @@ class _CalendarPage extends State<CalendarPage> {
       appBar: AppBar(
         title: const Text('Á Döfinni'),
       ),
-      body: Container(
-        child: ListView.builder(
-          physics: const NeverScrollableScrollPhysics(),
-          scrollDirection: Axis.vertical,
-          shrinkWrap: true,
-          itemCount: _commentList.length == null ? 0 : _commentList.length,
-          itemBuilder: (context, index) {
-            return calendarList(index);
+      body: SafeArea(
+        child: StreamBuilder<QuerySnapshot>(
+          stream: Firestore.instance.collection('events').snapshots(),
+          builder:
+              (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+            if (snapshot.hasError) return new Text('Error: ${snapshot.error}');
+            switch (snapshot.connectionState) {
+              case ConnectionState.waiting:
+                return new Text('Loading...');
+              default:
+                return new ListView(
+                  children:
+                      snapshot.data.documents.map((DocumentSnapshot document) {
+                    return new ListTile(
+                      title: new Text(document['title']),
+                      subtitle: new Text('date'),
+                    );
+                  }).toList(),
+                );
+            }
           },
         ),
       ),
