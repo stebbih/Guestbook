@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
@@ -26,11 +27,10 @@ class _CalendarPage extends State<CalendarPage> {
   }
 
   void addCommentToList(String _comment) {
-    /*setState(() {
-      _commentList.add(_comment);
-    });*/
-    Firestore.instance.collection('events').document()
-  .setData({ 'title': _comment, 'date': _date, 'user': 'Stefán'});
+    Firestore.instance
+        .collection('events')
+        .document()
+        .setData({'title': _comment, 'date': _date, 'user': 'Stefán'});
   }
 
   @override
@@ -52,9 +52,29 @@ class _CalendarPage extends State<CalendarPage> {
                 return new ListView(
                   children:
                       snapshot.data.documents.map((DocumentSnapshot document) {
-                    return new ListTile(
-                      title: new Text(document['title']),
-                      subtitle: new Text('date'),
+                    var formatedDate =
+                        new DateFormat.MMMd().format(new DateTime.now());
+                    var formatTime =
+                        new DateFormat.Hm().format(new DateTime.now());
+                    return new Card(
+                      color: document['user'] == 'Stefán'
+                          ? Color.fromARGB(255, 55, 144, 191)
+                          : Color.fromARGB(255, 215, 242, 255),
+                      child: ListTile(
+                        leading: Icon(FontAwesomeIcons.userAlt),
+                        title: new Text(
+                          document['title'],
+                          style: TextStyle(
+                            color: document['user'] == 'Stefán'
+                                ? Color.fromARGB(255, 255, 255, 255)
+                                : Color.fromARGB(255, 68, 67, 67),
+                            fontSize: 18,
+                            fontFamily: "Helvetica",
+                          ),
+                        ),
+                        subtitle: new Text('$formatedDate - $formatTime'),
+                        trailing: Icon(Icons.more_vert),
+                      ),
                     );
                   }).toList(),
                 );
