@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class CalendarPage extends StatefulWidget {
   @override
@@ -25,9 +27,10 @@ class _CalendarPage extends State<CalendarPage> {
   }
 
   void addCommentToList(String _comment) {
-    setState(() {
-      _commentList.add(_comment);
-    });
+    Firestore.instance
+        .collection('events')
+        .document()
+        .setData({'title': _comment, 'date': _date, 'user': 'Stefán'});
   }
 
   @override
@@ -36,14 +39,46 @@ class _CalendarPage extends State<CalendarPage> {
       appBar: AppBar(
         title: const Text('Á Döfinni'),
       ),
-      body: Container(
-        child: ListView.builder(
-          physics: const NeverScrollableScrollPhysics(),
-          scrollDirection: Axis.vertical,
-          shrinkWrap: true,
-          itemCount: _commentList.length == null ? 0 : _commentList.length,
-          itemBuilder: (context, index) {
-            return calendarList(index);
+      body: SafeArea(
+        child: StreamBuilder<QuerySnapshot>(
+          stream: Firestore.instance.collection('events').snapshots(),
+          builder:
+              (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+            if (snapshot.hasError) return new Text('Error: ${snapshot.error}');
+            switch (snapshot.connectionState) {
+              case ConnectionState.waiting:
+                return new Text('Loading...');
+              default:
+                return new ListView(
+                  children:
+                      snapshot.data.documents.map((DocumentSnapshot document) {
+                    var formatedDate =
+                        new DateFormat.MMMd().format(new DateTime.now());
+                    var formatTime =
+                        new DateFormat.Hm().format(new DateTime.now());
+                    return new Card(
+                      color: document['user'] == 'Stefán'
+                          ? Color.fromARGB(255, 55, 144, 191)
+                          : Color.fromARGB(255, 215, 242, 255),
+                      child: ListTile(
+                        leading: Icon(FontAwesomeIcons.userAlt),
+                        title: new Text(
+                          document['title'],
+                          style: TextStyle(
+                            color: document['user'] == 'Stefán'
+                                ? Color.fromARGB(255, 255, 255, 255)
+                                : Color.fromARGB(255, 68, 67, 67),
+                            fontSize: 18,
+                            fontFamily: "Helvetica",
+                          ),
+                        ),
+                        subtitle: new Text('$formatedDate - $formatTime'),
+                        trailing: Icon(Icons.more_vert),
+                      ),
+                    );
+                  }).toList(),
+                );
+            }
           },
         ),
       ),

@@ -9,7 +9,7 @@ class _NeedsPage extends State<NeedsPage> {
   final _formKey = GlobalKey<FormState>();
   String user;
   Map<String, bool> needs = new Map<String, bool>();
-  TextEditingController _controller = TextEditingController();
+  
 
   void addNeed(String value) {
     if (value != '') {
