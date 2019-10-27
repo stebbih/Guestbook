@@ -1,1 +1,1 @@
-const String USER_NAME = 'Stefán';
+const String USER_NAME = 'Anna Kristín';
