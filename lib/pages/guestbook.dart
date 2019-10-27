@@ -22,9 +22,9 @@ class _GuestbookPage extends State<GuestbookPage> {
   }
 
   // VISIT
-  Widget _renderVisitTile(DocumentSnapshot document) {
+  Widget _renderVisitTile(DocumentSnapshot document, bool isMe) {
     return Align(
-      alignment: Alignment.centerLeft,
+      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         margin: EdgeInsets.only(top: 2),
         decoration: BoxDecoration(
@@ -35,6 +35,7 @@ class _GuestbookPage extends State<GuestbookPage> {
           margin: EdgeInsets.all(15),
           child: Text(
             document['message'],
+            textAlign: isMe ? TextAlign.right : TextAlign.left,
             style: TextStyle(
               color: Color.fromARGB(255, 255, 255, 255),
               fontSize: 16,
@@ -44,43 +45,6 @@ class _GuestbookPage extends State<GuestbookPage> {
         ),
       ),
     );
-  }
-
-  // render a tile
-  Widget _renderMessageTile(DocumentSnapshot document, bool fromMe) {
-    return Align(
-      alignment: fromMe ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin: EdgeInsets.only(top: 1),
-        decoration: BoxDecoration(
-          color: fromMe
-              ? Color.fromARGB(255, 233, 234, 234)
-              : Color.fromARGB(255, 215, 242, 255),
-          borderRadius: BorderRadius.all(Radius.circular(20)),
-        ),
-        child: Container(
-          margin: EdgeInsets.all(15),
-          child: Text(
-            document['message'],
-            style: TextStyle(
-              color: Color.fromARGB(255, 68, 67, 67),
-              fontSize: 16,
-              fontFamily: "Helvetica",
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // render a tile
-  Widget _renderTile(DocumentSnapshot document, isMe) {
-    // Check if this is a visit
-    if (document['isVisit'] == true) {
-      return _renderVisitTile(document);
-    }
-
-    return _renderMessageTile(document, isMe);
   }
 
   List<Widget> _renderList(List<DocumentSnapshot> messages) {
@@ -108,7 +72,7 @@ class _GuestbookPage extends State<GuestbookPage> {
       }
 
       // render message
-      chatList.add(_renderTile(message, isMe));
+      chatList.add(_renderVisitTile(message, isMe));
 
       lastDate = messageDate;
       lastUser = messageUser;
@@ -147,10 +111,9 @@ class _GuestbookPage extends State<GuestbookPage> {
     );
   }
 
-  void postMessage(String message, bool isVisit) {
-    debugPrint('hæ!');
+  void postMessage(String message) {
     Firestore.instance.collection('guestbookMessages').document().setData({
-      'isVisit': isVisit,
+      'isVisit': true,
       'timestamp': Timestamp.now(),
       'user': USER_NAME,
       'message': message
@@ -162,11 +125,11 @@ class _GuestbookPage extends State<GuestbookPage> {
       controller: myController,
       autofocus: false,
       onSubmitted: (value) {
-        postMessage(value, false);
+        postMessage(value);
         myController.clear();
       },
       decoration: new InputDecoration(
-        hintText: "Enter task or need...",
+        hintText: "Sign guestbook...",
         enabledBorder: const OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(9.0)),
           borderSide: const BorderSide(color: Colors.grey, width: 0.5),
