@@ -1,68 +1,110 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 
+
 class NeedsPage extends StatefulWidget {
-  @override
-  _NeedsPage createState() => _NeedsPage();
+   @override
+  State<StatefulWidget> createState() {
+    return new _NeedsPage();
+  }
+  
+ /* @override
+  _NeedsPage createState() => _NeedsPage();*/
 }
 
 class _NeedsPage extends State<NeedsPage> {
   final _formKey = GlobalKey<FormState>();
   String user;
-  Map<String, bool> needs = new Map<String, bool>();
+  Map<String, dynamic> needs = new Map<String, dynamic>();
+  int priority = 3;
 
-  void addNeed(String value) {
-    if (value != '') {
-      setState(() => needs[value] = false);
+  
+  void addNeed(String need, int priority) {
+    debugPrint(priority.toString());
+    debugPrint(need);
+    // todo add to firestore
+    if (need != '') {
+      var tmpPri = priority.toString();
+      try {
+      var jsonData = '{ "reporter": "Me", "priority": $tmpPri, "doer": "" }';
+      var parsedJson = json.decode(jsonData);
+      needs[need] = parsedJson;
+      } catch(e) {
+        print("error: $e");
+      }
+      
     }
   }
 
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Column(children: <Widget>[
-        Expanded(
-            child: new ListView.builder(
-          itemCount: needs.length == null ? 0 : needs.length,
-          itemBuilder: (context, index) {
-            String value = needs.keys.elementAt(index);
-            return new Card(
-                child: ListTile(
-                    leading: new Checkbox(
-                      value: needs[value],
-                      onChanged: (v) {
-                        setState(() {
-                          needs[value] = !needs[value];
-                        });
-                      },
-                    ),
-                    title: new Text(value)));
-          },
-        )),
-      ]),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
-        onPressed: () {
-          showDialog(
-              context: context,
-              builder: (context) {
-                return StatefulBuilder(
-                  builder: (context, setState) {
-                    return AlertDialog(
-                        title: Text("Make new task"),
-                        content: Form(
-                          key: _formKey,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              Padding(
-                                padding: EdgeInsets.all(8.0),
-                                child: TextFormField(
-                                  onSaved: (String value) {
-                                    addNeed(value);
-                                    Navigator.pop(context);
-                                  },
+  int _radioValue = 0;
+  int value = 0;
+  
+  
+  _displayDialog(BuildContext context) async {
+      return showDialog(
+          context: context,
+          builder: (context) {
+            return StatefulBuilder(
+              builder: (context, setState) {
+                return new AlertDialog(
+                  title: Text("Make new task"),
+                  content:
+                    Center(
+                    child: Form(
+                      key: _formKey,
+                      child: Column( 
+                      mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[                            
+                          Padding(
+                              padding: EdgeInsets.all(8.0),
+                                  child: TextFormField(
+                                    onSaved: (String v) {
+                                      addNeed(v, priority);
+                                      Navigator.pop(context);
+                                    },
+                                  ),
                                 ),
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget> [
+                              new Radio(
+                                value: 1,
+                                groupValue: _radioValue,
+                                onChanged: (val) {
+                                  setState(() {
+                                    _radioValue = val;
+                                    priority = val;
+                                  });
+                                },
                               ),
-                            ],
+                              new Text('High'),
+                              new Radio(
+                                value: 2,
+                                groupValue: _radioValue,
+                                onChanged: (val) {
+                                  setState(() {
+                                    _radioValue = val;
+                                    priority = val;
+                                  });
+                                },
+                              ),
+                              new Text('Medium'),
+                              new Radio(
+                                value: 3,
+                                groupValue: _radioValue,
+                                onChanged: (val) {
+                                  setState(() {
+                                    _radioValue = val;
+                                    priority = val;
+                                  });
+                                },
+                              ),
+                              new Text('Low')
+                            ]
+                          ),
+                              ],
+                            ),
                           ),
                         ),
                         actions: <Widget>[
@@ -76,12 +118,54 @@ class _NeedsPage extends State<NeedsPage> {
                             },
                             child: Text("Add"),
                           ),
-                        ]);
-                  },
-                );
-              });
-        },
-      ),
-    );
+                    ]
+                  );
+                });
+              },
+            );
   }
+
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Vantar'),
+      ),
+      body: Column(
+        children: <Widget>[
+         Expanded (
+           child: new ListView.builder(
+            itemCount: needs.length == null ? 0 : needs.length,
+            itemBuilder: (context, index) {
+              String need = needs.keys.elementAt(index);
+              debugPrint(need);
+              debugPrint(needs[need]['doer']);
+              return new  Card(
+                  child: ListTile(
+                    leading: new Checkbox(
+                      value: needs[need]['doer'] == '' ? false : true,
+                      onChanged: (v) {
+                        setState(() {
+                          if (needs[need]['doer'] == '') {
+                            needs[need]['doer'] = 'Me';
+                          } else {
+                            needs[need]['doer'] = '';
+                          }
+                        });
+                      },
+                      ),
+                    title: new Text(need.toString())
+                )
+              );
+            },
+          )
+        ),
+        ]
+        ),
+        floatingActionButton: FloatingActionButton(
+            child: Icon(Icons.add),
+            onPressed: () => _displayDialog(context)
+        )
+      );
+    }
+     
 }
