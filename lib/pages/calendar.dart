@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:guestbook/constants.dart';
 
 class CalendarPage extends StatefulWidget {
   @override
@@ -27,25 +28,23 @@ class _CalendarPage extends State<CalendarPage> {
   }
 
   void addCommentToList(String _comment) {
-    Firestore.instance
-        .collection('events')
-        .document()
-        .setData({'title': _comment, 'timeStamp': Timestamp.fromDate(_date), 'user': 'Stefán'});
+    Firestore.instance.collection('events').document().setData({
+      'title': _comment,
+      'timeStamp': Timestamp.fromDate(_date),
+      'user': USER_NAME
+    });
   }
 
   String formatTimestamp(int timestamp) {
-      var format = new DateFormat('d MMM, hh:mm a');
-      var date = new DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
-      print(format.format(date));
-      return format.format(date);
-    }
+    var format = new DateFormat('d MMM, hh:mm a');
+    var date = new DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
+    print(format.format(date));
+    return format.format(date);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Á Döfinni'),
-      ),
       body: SafeArea(
         child: StreamBuilder<QuerySnapshot>(
           stream: Firestore.instance.collection('events').snapshots(),
@@ -62,10 +61,9 @@ class _CalendarPage extends State<CalendarPage> {
                     DateTime fromTimeStamp = document['timeStamp'].toDate();
                     var formatedDate =
                         new DateFormat.MMMd().format(fromTimeStamp);
-                    var formatTime =
-                        new DateFormat.Hm().format(fromTimeStamp);
+                    var formatTime = new DateFormat.Hm().format(fromTimeStamp);
                     return new Card(
-                      color: document['user'] == 'Stefán'
+                      color: document['user'] == USER_NAME
                           ? Color.fromARGB(255, 55, 144, 191)
                           : Color.fromARGB(255, 215, 242, 255),
                       child: ListTile(
@@ -73,7 +71,7 @@ class _CalendarPage extends State<CalendarPage> {
                         title: new Text(
                           document['title'],
                           style: TextStyle(
-                            color: document['user'] == 'Stefán'
+                            color: document['user'] == USER_NAME
                                 ? Color.fromARGB(255, 255, 255, 255)
                                 : Color.fromARGB(255, 68, 67, 67),
                             fontSize: 18,
@@ -83,7 +81,7 @@ class _CalendarPage extends State<CalendarPage> {
                         subtitle: new Text(
                           '$formatedDate - $formatTime',
                           style: TextStyle(
-                            color: document['user'] == 'Stefán'
+                            color: document['user'] == USER_NAME
                                 ? Color.fromARGB(255, 255, 255, 255)
                                 : Color.fromARGB(255, 68, 67, 67),
                             fontSize: 14,
@@ -107,7 +105,7 @@ class _CalendarPage extends State<CalendarPage> {
               return StatefulBuilder(
                 builder: (context, setState) {
                   return AlertDialog(
-                    title: Text("Skrá viðburð"),
+                    title: Text("Register event"),
                     content: Form(
                       key: _formKey,
                       child: Column(
@@ -131,7 +129,7 @@ class _CalendarPage extends State<CalendarPage> {
                                       locale: LocaleType.en);
                                 },
                               ),
-                              Text('$_date'),
+                              Text(_date == null ? 'Select date' : '${_date.day}-${_date.month} ${_date.hour}:${_date.minute}'),
                             ],
                           ),
                           Padding(

@@ -1,1 +1,1 @@
-const OUR_GROUP_ID = "kSf9mUqFNITGWnfE8mtc";
+const String USER_NAME = 'Stefán';
