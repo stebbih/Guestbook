@@ -33,22 +33,21 @@ class _HomePageState extends State<HomePage> {
         items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.book),
-            title: Text('Gestabók'),
+            title: Text('Guestbook'),
             activeIcon: Icon(Icons.book),
           ),
           BottomNavigationBarItem(
             icon: Icon(FontAwesomeIcons.comment),
-            title: Text('Spjall'),
+            title: Text('Chat'),
             activeIcon: Icon(FontAwesomeIcons.comment),
           ),
           BottomNavigationBarItem(
-            icon: Icon(FontAwesomeIcons.calendarAlt),
-            title: Text('Á döfinni'),
-            activeIcon: Icon(FontAwesomeIcons.calendarAlt)
-          ),
+              icon: Icon(FontAwesomeIcons.calendarAlt),
+              title: Text('Comming up'),
+              activeIcon: Icon(FontAwesomeIcons.calendarAlt)),
           BottomNavigationBarItem(
             icon: Icon(FontAwesomeIcons.listAlt),
-            title: Text('Vantar'),
+            title: Text('Needs'),
           ),
         ],
         currentIndex: _selectedIndex,

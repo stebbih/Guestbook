@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:guestbook/constants.dart';
 import 'package:intl/intl.dart';
 
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -30,15 +31,12 @@ class _CalendarPage extends State<CalendarPage> {
     Firestore.instance
         .collection('events')
         .document()
-        .setData({'title': _comment, 'date': _date, 'user': 'Stefán'});
+        .setData({'title': _comment, 'date': _date, 'user': USER_NAME});
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Á Döfinni'),
-      ),
       body: SafeArea(
         child: StreamBuilder<QuerySnapshot>(
           stream: Firestore.instance.collection('events').snapshots(),
@@ -57,7 +55,7 @@ class _CalendarPage extends State<CalendarPage> {
                     var formatTime =
                         new DateFormat.Hm().format(new DateTime.now());
                     return new Card(
-                      color: document['user'] == 'Stefán'
+                      color: document['user'] == USER_NAME
                           ? Color.fromARGB(255, 55, 144, 191)
                           : Color.fromARGB(255, 215, 242, 255),
                       child: ListTile(
@@ -65,7 +63,7 @@ class _CalendarPage extends State<CalendarPage> {
                         title: new Text(
                           document['title'],
                           style: TextStyle(
-                            color: document['user'] == 'Stefán'
+                            color: document['user'] == USER_NAME
                                 ? Color.fromARGB(255, 255, 255, 255)
                                 : Color.fromARGB(255, 68, 67, 67),
                             fontSize: 18,

@@ -9,7 +9,6 @@ class _NeedsPage extends State<NeedsPage> {
   final _formKey = GlobalKey<FormState>();
   String user;
   Map<String, bool> needs = new Map<String, bool>();
-  
 
   void addNeed(String value) {
     if (value != '') {
@@ -19,9 +18,6 @@ class _NeedsPage extends State<NeedsPage> {
 
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Vantar'),
-      ),
       body: Column(children: <Widget>[
         Expanded(
             child: new ListView.builder(

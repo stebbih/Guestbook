@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 import 'package:guestbook/constants.dart';
 
@@ -9,6 +10,17 @@ class GuestbookPage extends StatefulWidget {
 }
 
 class _GuestbookPage extends State<GuestbookPage> {
+  DateFormat dateFormat = DateFormat("MMM dd");
+
+  final myController = TextEditingController();
+  @override
+  void dispose() {
+    // Clean up the controller when the widget is removed from the
+    // widget tree.
+    myController.dispose();
+    super.dispose();
+  }
+
   // VISIT
   Widget _renderVisitTile(DocumentSnapshot document) {
     return Align(
@@ -87,8 +99,8 @@ class _GuestbookPage extends State<GuestbookPage> {
       }
 
       // Is this the first message / first message of day ?
-      if (lastDate == null || lastDate.difference(messageDate).inDays > 0) {
-        //chatList.add(_renderDate(messageDate));
+      if (lastDate == null || messageDate.difference(lastDate).inDays > 0) {
+        chatList.add(_renderDate(messageDate));
         chatList.add(_renderUser(messageUser, isMe));
       } else if (messageUser != lastUser) {
         // Is new user
@@ -104,14 +116,14 @@ class _GuestbookPage extends State<GuestbookPage> {
     return chatList;
   }
 
-/*
   Widget _renderDate(DateTime date) {
     return Container(
+      margin: EdgeInsets.only(top: 8),
       child: Text(
-        date.toLocal(),
+        dateFormat.format(date),
         style: TextStyle(
           color: Color.fromARGB(255, 166, 166, 166),
-          fontSize: 12,
+          fontSize: 14,
           fontFamily: "Helvetica",
           fontWeight: FontWeight.w700,
         ),
@@ -119,10 +131,10 @@ class _GuestbookPage extends State<GuestbookPage> {
       ),
     );
   }
-*/
+
   Widget _renderUser(String user, bool fromMe) {
     return Container(
-      margin: EdgeInsets.only(top: 4, right: 8, left: 5),
+      margin: EdgeInsets.only(top: 2, right: 8, left: 5),
       child: Text(
         user,
         textAlign: fromMe ? TextAlign.right : TextAlign.left,
@@ -135,30 +147,67 @@ class _GuestbookPage extends State<GuestbookPage> {
     );
   }
 
+  void postMessage(String message, bool isVisit) {
+    debugPrint('hæ!');
+    Firestore.instance.collection('guestbookMessages').document().setData({
+      'isVisit': isVisit,
+      'timestamp': Timestamp.now(),
+      'user': USER_NAME,
+      'message': message
+    });
+  }
+
+  Widget _renderBottomBar() {
+    return new TextField(
+      controller: myController,
+      autofocus: false,
+      onSubmitted: (value) {
+        postMessage(value, false);
+        myController.clear();
+      },
+      decoration: new InputDecoration(
+        hintText: "Enter task or need...",
+        enabledBorder: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(9.0)),
+          borderSide: const BorderSide(color: Colors.grey, width: 0.5),
+        ),
+        focusedBorder: const OutlineInputBorder(
+          borderSide: const BorderSide(color: Colors.blue, width: 2.0),
+        ),
+      ),
+    );
+  }
+
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          child: StreamBuilder<QuerySnapshot>(
-            stream: Firestore.instance
-                .collection('guestbookMessages')
-                .orderBy('timestamp')
-                .snapshots(),
-            builder:
-                (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-              if (snapshot.hasError)
-                return new Text('Error: ${snapshot.error}');
-              switch (snapshot.connectionState) {
-                case ConnectionState.waiting:
-                  return new Text('Loading...');
-                default:
-                  return ListView(
-                      children: _renderList(snapshot.data.documents));
-              }
-            },
-          ),
-        ),
+            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            child: Column(
+              children: <Widget>[
+                Expanded(
+                  child: StreamBuilder<QuerySnapshot>(
+                    stream: Firestore.instance
+                        .collection('guestbookMessages')
+                        .orderBy('timestamp')
+                        .snapshots(),
+                    builder: (BuildContext context,
+                        AsyncSnapshot<QuerySnapshot> snapshot) {
+                      if (snapshot.hasError)
+                        return new Text('Error: ${snapshot.error}');
+                      switch (snapshot.connectionState) {
+                        case ConnectionState.waiting:
+                          return new Text('Loading...');
+                        default:
+                          return ListView(
+                              children: _renderList(snapshot.data.documents));
+                      }
+                    },
+                  ),
+                ),
+                _renderBottomBar()
+              ],
+            )),
       ),
     );
   }
