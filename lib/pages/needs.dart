@@ -16,19 +16,20 @@ class NeedsPage extends StatefulWidget {
 class _NeedsPage extends State<NeedsPage> {
   final _formKey = GlobalKey<FormState>();
   String user;
-  Map<dynamic, dynamic> needs = new Map<String, String>();
+  Map<String, dynamic> needs = new Map<String, dynamic>();
   int priority = 3;
 
   
-  void addNeed(String value, int priority) async {
-    //debugPrint(priority.toString());
+  void addNeed(String need, int priority) {
+    debugPrint(priority.toString());
+    debugPrint(need);
     // todo add to firestore
-    if (value != '') {
+    if (need != '') {
       var tmpPri = priority.toString();
       try {
-      var jsonData = '{ "reporter": "Me", "priority": $tmpPri, "doer": "Stefán" }';
+      var jsonData = '{ "reporter": "Me", "priority": $tmpPri, "doer": "" }';
       var parsedJson = json.decode(jsonData);
-      needs[value] = parsedJson;
+      needs[need] = parsedJson;
       } catch(e) {
         print("error: $e");
       }
@@ -135,22 +136,24 @@ class _NeedsPage extends State<NeedsPage> {
            child: new ListView.builder(
             itemCount: needs.length == null ? 0 : needs.length,
             itemBuilder: (context, index) {
-              String value = needs.keys.elementAt(index);
+              String need = needs.keys.elementAt(index);
+              debugPrint(need);
+              debugPrint(needs[need]['doer']);
               return new  Card(
                   child: ListTile(
                     leading: new Checkbox(
-                      value: needs['doer'] == '' ? false : true,
+                      value: needs[need]['doer'] == '' ? false : true,
                       onChanged: (v) {
                         setState(() {
-                          if (needs['doer'] == '') {
-                            needs['doer'] = 'Me';
+                          if (needs[need]['doer'] == '') {
+                            needs[need]['doer'] = 'Me';
                           } else {
-                            needs['doer'] = '';
+                            needs[need]['doer'] = '';
                           }
                         });
                       },
                       ),
-                    title: new Text(value)
+                    title: new Text(need.toString())
                 )
               );
             },
@@ -165,4 +168,10 @@ class _NeedsPage extends State<NeedsPage> {
       );
     }
      
+}
+
+class GroupModel {
+  String text;
+  int index;
+  GroupModel({this.text, this.index});
 }
