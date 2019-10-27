@@ -13,14 +13,14 @@ class CalendarPage extends StatefulWidget {
 class _CalendarPage extends State<CalendarPage> {
   final _formKey = GlobalKey<FormState>();
   List<String> _commentList = [];
-  String _date = '';
+  DateTime _date;
 
   Widget calendarList(int index) {
     return Card(
       child: ListTile(
         leading: Text('nafn'),
         title: Text(_commentList[index]),
-        subtitle: Text(_date),
+        subtitle: Text('Timi hér'),
         trailing: Icon(Icons.more_vert),
       ),
     );
@@ -30,8 +30,15 @@ class _CalendarPage extends State<CalendarPage> {
     Firestore.instance
         .collection('events')
         .document()
-        .setData({'title': _comment, 'date': _date, 'user': 'Stefán'});
+        .setData({'title': _comment, 'timeStamp': Timestamp.fromDate(_date), 'user': 'Stefán'});
   }
+
+  String formatTimestamp(int timestamp) {
+      var format = new DateFormat('d MMM, hh:mm a');
+      var date = new DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
+      print(format.format(date));
+      return format.format(date);
+    }
 
   @override
   Widget build(BuildContext context) {
@@ -52,10 +59,11 @@ class _CalendarPage extends State<CalendarPage> {
                 return new ListView(
                   children:
                       snapshot.data.documents.map((DocumentSnapshot document) {
+                    DateTime fromTimeStamp = document['timeStamp'].toDate();
                     var formatedDate =
-                        new DateFormat.MMMd().format(new DateTime.now());
+                        new DateFormat.MMMd().format(fromTimeStamp);
                     var formatTime =
-                        new DateFormat.Hm().format(new DateTime.now());
+                        new DateFormat.Hm().format(fromTimeStamp);
                     return new Card(
                       color: document['user'] == 'Stefán'
                           ? Color.fromARGB(255, 55, 144, 191)
@@ -72,7 +80,16 @@ class _CalendarPage extends State<CalendarPage> {
                             fontFamily: "Helvetica",
                           ),
                         ),
-                        subtitle: new Text('$formatedDate - $formatTime'),
+                        subtitle: new Text(
+                          '$formatedDate - $formatTime',
+                          style: TextStyle(
+                            color: document['user'] == 'Stefán'
+                                ? Color.fromARGB(255, 255, 255, 255)
+                                : Color.fromARGB(255, 68, 67, 67),
+                            fontSize: 14,
+                            fontFamily: "Helvetica",
+                          ),
+                        ),
                         trailing: Icon(Icons.more_vert),
                       ),
                     );
@@ -84,9 +101,6 @@ class _CalendarPage extends State<CalendarPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          setState(() {
-            _date = 'Select date';
-          });
           showDialog(
             context: context,
             builder: (context) {
@@ -106,19 +120,18 @@ class _CalendarPage extends State<CalendarPage> {
                                 onPressed: () {
                                   DatePicker.showDateTimePicker(context,
                                       showTitleActions: true,
-                                      minTime: DateTime(2018, 3, 5),
-                                      maxTime: DateTime(2019, 6, 7),
+                                      minTime: DateTime.now(),
+                                      maxTime: DateTime(2020, 10, 27),
                                       onConfirm: (date) {
                                     print(date);
-                                    _date =
-                                        '${date.day}/${date.month} - ${date.hour}:${date.minute}';
+                                    _date = date;
                                     setState(() {});
                                   },
                                       currentTime: DateTime.now(),
                                       locale: LocaleType.en);
                                 },
                               ),
-                              Text(_date),
+                              Text('$_date'),
                             ],
                           ),
                           Padding(
